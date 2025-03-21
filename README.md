@@ -1,5 +1,4 @@
-# bandwidth-hero-proxy-php
-Bandwidth Hero Proxy But In PHP
-For More Information Visit Here 
+# Bandwidth Hero Proxy In PHP
+For more information about Bandwidth Hero visit here 
 <br>
 https://github.com/ayastreb/bandwidth-hero-proxy
