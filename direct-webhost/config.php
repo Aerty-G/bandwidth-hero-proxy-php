@@ -1,0 +1,3 @@
+<?php
+// Entar Aja dah
+?>
