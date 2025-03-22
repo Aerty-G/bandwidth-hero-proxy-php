@@ -30,8 +30,9 @@ class BandwidthHero {
     
     private function simpleValidate() {
       if (!isset($_GET['url'])) {
-        header("HTTP/1.0 404 Not Found");
-        echo json_encode(['success' => false, 'message' => 'No Url Provided']);
+        echo 'bandwidth-hero-proxy';
+//         header("HTTP/1.0 404 Not Found");
+//         echo json_encode(['success' => false, 'message' => 'No Url Provided']);
         exit;
       }
     }
@@ -69,7 +70,11 @@ class BandwidthHero {
     
     private function getTmpFolderEach() {
       $this->option->tmp = new stdClass(); 
-      $this->option->tmp->folder = sys_get_temp_dir();
+      //$this->option->tmp->folder = sys_get_temp_dir();
+      $this->option->tmp->folder = __DIR__.'/tmp';
+      if (!file_exists($this->option->tmp->folder)) {
+        mkdir($this->option->tmp->folder);
+      }
       $this->option->tmp->original = $this->option->tmp->folder . DIRECTORY_SEPARATOR . uniqid().'.' . $this->option->query['original_ext'];
       $this->option->tmp->convert = $this->option->tmp->folder . DIRECTORY_SEPARATOR . uniqid().'.' . $this->option->query['convert_ext'];
     }

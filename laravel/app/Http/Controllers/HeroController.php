@@ -10,10 +10,11 @@ class HeroController extends Controller
     public function Get( Request $request ) {
         $url_image = $request->query('url');
         if(!$url_image || empty($url_image)) {
-          return response()->json([
-              'success' => false,
-              'message' => 'No Url Image Provided'
-          ]); 
+            return 'bandwidth-hero-proxy';
+//           return response()->json([
+//               'success' => false,
+//               'message' => 'No Url Image Provided'
+//           ]); 
         }
         $url_image = preg_replace('/http:\/\/1\.1\.\d\.\d\/bmi\/(https?:\/\/)?/i', 'http://', $url_image);
         $params = [
