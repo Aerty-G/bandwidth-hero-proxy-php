@@ -12,10 +12,10 @@ class BandwidthHero {
       $this->getHeader();
       $this->getQuery();
       $this->getTmpFolderEach();
-      
       $image = self::ImageDown($this->option->query['url'], $this->option->headers);
       file_put_contents($this->option->tmp->original, $image);
       $final_path = self::convertImage($this->option->tmp->original, $this->option->tmp->convert, $this->option->query['webp'], $this->option->query['quality']);
+      $this->CleanUp();
       if ($final_path === $this->option->tmp->original) {
         $ext = $this->option->query['original_ext'];
       } elseif ($final_path === $this->option->tmp->convert) {
@@ -34,6 +34,17 @@ class BandwidthHero {
         echo json_encode(['success' => false, 'message' => 'No Url Provided']);
         exit;
       }
+    }
+     
+    private function CleanUp() {
+        register_shutdown_function(function () use ($this) {
+            if (file_exists($this->option->tmp->convert)) {
+                unlink($this->option->tmp->convert);
+            }
+            if (file_exists($this->option->tmp->original)) {
+                unlink($this->option->tmp->original);
+            }
+        });
     }
      
     private function getHeader() {

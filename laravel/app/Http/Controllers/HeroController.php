@@ -18,7 +18,7 @@ class HeroController extends Controller
         $url_image = preg_replace('/http:\/\/1\.1\.\d\.\d\/bmi\/(https?:\/\/)?/i', 'http://', $url_image);
         $params = [
             'url' => $url_image,
-            'webp' => !$request->query('jpeg'), 
+            'webp' => !$request->query('jpeg') && !$request->query('jpg'), 
             'grayscale' => $request->query('bw') != 0, 
             'quality' => (int) $request->query('l') ?: self::DEFAULT_QUALITY,
         ];
@@ -39,7 +39,14 @@ class HeroController extends Controller
         $image_convert_path = $tmp_dir . DIRECTORY_SEPARATOR . uniqid().'.' . $extension_convert;
         $final_path = self::convertImage($image_path, $image_convert_path, $params['webp'], $params['quality']);
         $imageStream = fopen($final_path, 'rb'); 
-        
+        register_shutdown_function(function () use ($image_convert_path, $image_path) {
+            if (file_exists($image_convert_path)) {
+                unlink($image_convert_path);
+            }
+            if (file_exists($image_path)) {
+                unlink($image_path);
+            }
+        });
         return response()->stream(function() use ($imageStream) {
             fpassthru($imageStream); 
             fclose($imageStream); 
