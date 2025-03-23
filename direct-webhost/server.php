@@ -38,12 +38,14 @@ class BandwidthHero {
     }
      
     private function CleanUp() {
-        register_shutdown_function(function () use ($this) {
-            if (file_exists($this->option->tmp->convert)) {
-                unlink($this->option->tmp->convert);
+        $original = $this->option->tmp->original;
+        $convert = $this->option->tmp->convert;
+        register_shutdown_function(function () use ($original, $convert) {
+            if (file_exists($convert)) {
+                unlink($convert);
             }
-            if (file_exists($this->option->tmp->original)) {
-                unlink($this->option->tmp->original);
+            if (file_exists($original)) {
+                unlink($original);
             }
         });
     }
