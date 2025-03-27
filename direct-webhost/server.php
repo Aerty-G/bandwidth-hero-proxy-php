@@ -5,6 +5,7 @@ class BandwidthHero {
     
     public function __construct() {
         $this->option = new stdClass(); 
+        $this->option->config = require_once('config.php');
     }
 
     public function proxy() {
@@ -14,8 +15,8 @@ class BandwidthHero {
       $this->getTmpFolderEach();
       $image = self::ImageDown($this->option->query['url'], $this->option->headers);
       file_put_contents($this->option->tmp->original, $image);
-      $final_path = self::convertImage($this->option->tmp->original, $this->option->tmp->convert, $this->option->query['webp'], $this->option->query['quality']);
-      $this->CleanUp();
+      $final_path = self::convertImage($this->option->tmp->original, $this->option->tmp->convert, $this->option->query['webp'], $this->option->query['grayscale'], $this->option->query['quality']);
+      $this->PromiseCleanUp();
       if ($final_path === $this->option->tmp->original) {
         $ext = $this->option->query['original_ext'];
       } elseif ($final_path === $this->option->tmp->convert) {
@@ -29,15 +30,43 @@ class BandwidthHero {
     }
     
     private function simpleValidate() {
-      if (!isset($_GET['url'])) {
+      if ( !isset($_GET['url']) ) {
         echo 'bandwidth-hero-proxy';
 //         header("HTTP/1.0 404 Not Found");
 //         echo json_encode(['success' => false, 'message' => 'No Url Provided']);
         exit;
       }
+      if ( $this->option->config['auth'] && isset($_GET['token']) ) {
+        if ( $this->option->config['token'] === isset($_GET['token']) ) {
+          return;
+        } else {
+          echo 'bandwidth-hero-proxy';
+          exit;
+        }
+      } elseif ( $this->option->config['auth'] && !isset($_GET['token']) ) {
+        echo 'bandwidth-hero-proxy';
+        exit;
+      }
+      return;
+    }
+    
+    private function getClientIp() {
+        $ipAddress = '';
+    
+        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+            $ipAddress = $_SERVER['HTTP_CLIENT_IP'];
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
+            $ipArray = explode(',', $ipAddress);
+            $ipAddress = trim($ipArray[0]);
+        } elseif (!empty($_SERVER['REMOTE_ADDR'])) {
+            $ipAddress = $_SERVER['REMOTE_ADDR'];
+        }
+    
+        return $ipAddress;
     }
      
-    private function CleanUp() {
+    private function PromiseCleanUp() {
         $original = $this->option->tmp->original;
         $convert = $this->option->tmp->convert;
         register_shutdown_function(function () use ($original, $convert) {
@@ -57,6 +86,10 @@ class BandwidthHero {
       $this->option->headers['cookie'] = $this->option->all_headers['cookie'] ?? '';
       $this->option->headers['dnt'] = $this->option->all_headers['dnt'] ?? '';
       $this->option->headers['referer'] = $this->option->all_headers['referer'] ?? '';
+      if ($this->option->config->forward_ip) {
+        $ip = getClientIp;
+        $this->option->headers['X-Forwarded-For'] = $ip;
+      }
     }
     
     private function getQuery() {
@@ -114,7 +147,7 @@ class BandwidthHero {
     
         
     }
-    private static function convertImage($sourcePath, $destinationPath, $webp, $quality = 80)
+    private static function convertImage($sourcePath, $destinationPath, $webp, $grayscale, $quality = 80)
     {
         try {
             $imageInfo = getimagesize($sourcePath);
@@ -157,14 +190,18 @@ class BandwidthHero {
                 imagedestroy($source);
                 $source = $truecolorImage;
             }
+            if ($grayscale) {
+                imagefilter($source, IMG_FILTER_GRAYSCALE);
+            }
+            
             if ($webp) {
                 $result = imagewebp($source, $destinationPath, $quality);
             } else {
-                if ($imageInfo['mime'] === 'image/png') {
-                    $result = imagepng($source, $destinationPath, round($quality / 10)); 
-                } else {
+//                 if ($imageInfo['mime'] === 'image/png') {
+//                     $result = imagepng($source, $destinationPath, round($quality / 10)); 
+//                 } else {
                     $result = imagejpeg($source, $destinationPath, $quality);
-                }
+//                 }
             }
 
             if ($result === false) {

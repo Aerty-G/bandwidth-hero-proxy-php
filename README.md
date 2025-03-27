@@ -4,4 +4,4 @@ For more information about Bandwidth Hero visit here
 https://github.com/ayastreb/bandwidth-hero-proxy
 <br>
 # Difference 
-Nothing Difference with the JS version, but some features like GrayScale and forward IP address is disabled.
+Nothing Difference with the JS version. Make Sure Check The config.php first before you run it.
