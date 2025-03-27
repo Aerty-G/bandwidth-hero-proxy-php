@@ -114,7 +114,7 @@ class BandwidthHero {
       $this->option->tmp->convert = $this->option->tmp->folder . DIRECTORY_SEPARATOR . uniqid().'.' . $this->option->query['convert_ext'];
     }
     
-    private static function ImageDown($url, $headers = '') 
+    private static function ImageDown($url, $headers = []) 
     {
         $headers['Accept'] = 'image/avif,image/webp,*/*';
         $headers['Accept-Language'] = 'en-US,en;q=0.5';
