@@ -31,6 +31,7 @@ class HeroController extends Controller
         ];
         
         $image = self::ImageDown($params['url'], $headers);
+        if (!$image || empty($image)) $image = file_get_contents($params['url']);
         $tmp_dir = sys_get_temp_dir();
         $path_parts = pathinfo($params['url']);
         $extension = $path_parts['extension'];
