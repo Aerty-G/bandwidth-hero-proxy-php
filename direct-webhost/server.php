@@ -14,6 +14,11 @@ class BandwidthHero {
       $this->getQuery();
       $this->getTmpFolderEach();
       $image = self::ImageDown($this->option->query['url'], $this->option->headers);
+      if (!$image || empty($image)) $image = file_get_contents($this->option->query['url']);
+      if (!$image || empty($image)) {
+        echo '{"success": false, "message": "Image Can\'t Be Downloaded"}';
+        exit;
+      }
       file_put_contents($this->option->tmp->original, $image);
       $final_path = self::convertImage($this->option->tmp->original, $this->option->tmp->convert, $this->option->query['webp'], $this->option->query['grayscale'], $this->option->query['quality']);
       $this->PromiseCleanUp();
@@ -114,7 +119,7 @@ class BandwidthHero {
       $this->option->tmp->convert = $this->option->tmp->folder . DIRECTORY_SEPARATOR . uniqid().'.' . $this->option->query['convert_ext'];
     }
     
-    private static function ImageDown($url, $headers = '') 
+    private static function ImageDown($url, $headers = []) 
     {
         $headers['Accept'] = 'image/avif,image/webp,*/*';
         $headers['Accept-Language'] = 'en-US,en;q=0.5';

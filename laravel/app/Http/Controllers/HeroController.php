@@ -31,6 +31,7 @@ class HeroController extends Controller
         ];
         
         $image = self::ImageDown($params['url'], $headers);
+        if (!$image || empty($image)) $image = file_get_contents($params['url']);
         $tmp_dir = sys_get_temp_dir();
         $path_parts = pathinfo($params['url']);
         $extension = $path_parts['extension'];
@@ -38,7 +39,7 @@ class HeroController extends Controller
         $image_path = $tmp_dir . DIRECTORY_SEPARATOR . uniqid().'.' . $extension;
         file_put_contents($image_path, $image);
         $image_convert_path = $tmp_dir . DIRECTORY_SEPARATOR . uniqid().'.' . $extension_convert;
-        $final_path = self::convertImage($image_path, $image_convert_path, $params['webp'], $params['quality']);
+        $final_path = self::convertImage($image_path, $image_convert_path, $params['webp'], $params['grayscale'], $params['quality']);
         $imageStream = fopen($final_path, 'rb'); 
         register_shutdown_function(function () use ($image_convert_path, $image_path) {
             if (file_exists($image_convert_path)) {
@@ -55,7 +56,7 @@ class HeroController extends Controller
             'Content-Type' => 'image/'.$extension_convert, 
         ]);
     }
-    public static function ImageDown($url, $headers = '') 
+    public static function ImageDown($url, $headers = []) 
     {
         $headers['Accept'] = 'image/avif,image/webp,*/*';
         $headers['Accept-Language'] = 'en-US,en;q=0.5';
@@ -89,7 +90,7 @@ class HeroController extends Controller
         
     }
     
-    public static function convertImage($sourcePath, $destinationPath, $webp, $quality = 80)
+    public static function convertImage($sourcePath, $destinationPath, $webp, $grayscale, $quality = 80)
     {
         try {
             $imageInfo = getimagesize($sourcePath);
@@ -132,14 +133,17 @@ class HeroController extends Controller
                 imagedestroy($source);
                 $source = $truecolorImage;
             }
+            if ($grayscale) {
+                imagefilter($source, IMG_FILTER_GRAYSCALE);
+            }
             if ($webp) {
                 $result = imagewebp($source, $destinationPath, $quality);
             } else {
-                if ($imageInfo['mime'] === 'image/png') {
-                    $result = imagepng($source, $destinationPath, round($quality / 10)); 
-                } else {
+//                 if ($imageInfo['mime'] === 'image/png') {
+//                     $result = imagepng($source, $destinationPath, round($quality / 10)); 
+//                 } else {
                     $result = imagejpeg($source, $destinationPath, $quality);
-                }
+//                 }
             }
 
             if ($result === false) {
